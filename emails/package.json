@@ -1,0 +1,19 @@
+{
+  "name": "emails",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:test": "dotenv -e .env.test -- node gmail.js",
+    "start:prod": "dotenv -e .env.prod -- node gmail.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv-cli": "^8.0.0",
+    "googleapis": "^148.0.0",
+    "mime-types": "^3.0.1",
+    "mimetext": "3.0.25"
+  }
+}
