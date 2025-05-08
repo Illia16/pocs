@@ -6,10 +6,12 @@ require('dotenv').config();
 
 const mime = require('mime-types');
 const { createMimeMessage } = require('mimetext');
+const { initProcessPdf } = require('./processPdf');
 
 const SEARCH_QUERY = process.env.SEARCH_QUERY;
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL;
+const PDF_PASSWORD = process.env.PDF_PASSWORD;
 
 // Initialize auth and start the app
 initializeAuth(listMessages);
@@ -74,7 +76,17 @@ const getMessageWithAttachments = async (auth, messageId) => {
           .replace(/-/g, '+')
           .replace(/_/g, '/');
 
-        await sendEmailWithAttachment(auth, attachmentBase64Data, part);
+        // Decode base64 to buffer and save to file
+        const decodedData = Buffer.from(attachmentBase64Data, 'base64');
+        fs.writeFileSync(part.filename, decodedData);
+        // Process the PDF, read the redacted pdf and send it
+        await initProcessPdf(part.filename, PDF_PASSWORD);
+        const redactedPdf = fs.readFileSync('redacted_decrypted_' + part.filename);
+        const base64Data = Buffer.from(redactedPdf).toString('base64');
+        await sendEmailWithAttachment(auth, base64Data, part);
+        //
+
+        // await sendEmailWithAttachment(auth, attachmentBase64Data, part); // if emailing original pdf directly
       }
     }
   } catch (error) {
