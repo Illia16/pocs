@@ -7,6 +7,7 @@ require('dotenv').config();
 const mime = require('mime-types');
 const { createMimeMessage } = require('mimetext');
 const { initProcessPdf } = require('./processPdf');
+const { pdfToImg } = require('./pdfToImage');
 
 const SEARCH_QUERY = process.env.SEARCH_QUERY;
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
@@ -81,9 +82,9 @@ const getMessageWithAttachments = async (auth, messageId) => {
         fs.writeFileSync(part.filename, decodedData);
         // Process the PDF, read the redacted pdf and send it
         await initProcessPdf(part.filename, PDF_PASSWORD);
-        const redactedPdf = fs.readFileSync('redacted_decrypted_' + part.filename);
-        const base64Data = Buffer.from(redactedPdf).toString('base64');
-        await sendEmailWithAttachment(auth, base64Data, part);
+        const img = await pdfToImg('redacted_decrypted_' + part.filename)
+        const base64Data = Buffer.from(img.buffer).toString('base64');
+        await sendEmailWithAttachment(auth, base64Data, img.filename);
         //
 
         // await sendEmailWithAttachment(auth, attachmentBase64Data, part); // if emailing original pdf directly
@@ -94,23 +95,23 @@ const getMessageWithAttachments = async (auth, messageId) => {
   }
 }
 
-const sendEmailWithAttachment = async (auth, base64Data, part) => {
+const sendEmailWithAttachment = async (auth, base64Data, filename) => {
   const gmail = google.gmail({ version: 'v1', auth });
 
   const message = createMimeMessage();
   message.setSender(SENDER_EMAIL);
   message.setRecipients([SENDER_EMAIL, RECIPIENT_EMAIL]);
-  message.setSubject(`AUTO-EMAIL:${part.filename}`);
+  message.setSubject(`AUTO-EMAIL:${filename}`);
   message.addMessage({
       contentType: 'text/plain',
       data: 'This email was sent automatically.',
   });
 
-  const contentType = mime.lookup(part.filename);
+  const contentType = mime.lookup(filename);
   console.log('contentType', contentType);
 
   message.addAttachment({
-      filename: part.filename,
+      filename: filename,
       contentType: contentType,
       data: base64Data,
   });
@@ -129,7 +130,7 @@ const sendEmailWithAttachment = async (auth, base64Data, part) => {
       },
     });
 
-    console.log(`Email sent to ${SENDER_EMAIL} and ${RECIPIENT_EMAIL} with attachment: ${part.filename}`);
+    console.log(`Email sent to ${SENDER_EMAIL} and ${RECIPIENT_EMAIL} with attachment: ${filename}`);
   } catch (error) {
     console.error('Error sending email:', error);
     throw error;
