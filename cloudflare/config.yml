@@ -1,0 +1,7 @@
+tunnel: poc-tunnel
+credentials-file: ./my-poc-tunnel.json
+
+ingress:
+  - hostname: poc-tunnel.illusha.net
+    service: http://localhost:3000 # need to run something on this port
+  - service: http_status:404
