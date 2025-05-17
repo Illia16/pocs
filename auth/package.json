@@ -1,0 +1,18 @@
+{
+  "name": "google-auth-lambda",
+  "version": "1.0.0",
+  "description": "Google Authentication Lambda Function",
+  "main": "google_auth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:sam": "dotenv -e .env -- sam local start-api --port 3010",
+    "start:web": "http-server -p 3000"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1499.0",
+    "dotenv-cli": "^8.0.0",
+    "google-auth-library": "^9.6.1",
+    "http-server": "^14.1.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

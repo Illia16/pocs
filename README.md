@@ -13,8 +13,16 @@
 - node gmail.js or via npm start:[ENV]
 
 
-## cloudflare 
+## cloudflare
 ### cf-tunnel
 - cloudflared tunnel create poc-tunnel
 - cloudflared tunnel route dns poc-tunnel poc-tunnel.illusha.net
 - cloudflared tunnel run poc-tunnel (cloudflared tunnel --config config.yml run poc-tunnel)
+
+
+## auth
+### google
+- .env must contain `GOOGLE_CLIENT_ID` and `JWT_SECRET`
+- config.js must contain `GOOGLE_CLIENT_ID` (see [config.template.js](auth/config.template.js))
+- start:sam
+- start:web

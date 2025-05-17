@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sign-In</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #userInfo {
+            margin-top: 20px;
+            display: none;
+        }
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .test-button {
+            margin-top: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Sign-In</h1>
+        <div id="g_id_onload"
+             data-client_id=""
+             data-callback="handleCredentialResponse">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
+        <div id="userInfo">
+            <img id="profilePic" class="profile-pic" src="" alt="Profile Picture">
+            <h2 id="userName"></h2>
+            <p id="userEmail"></p>
+            <button onclick="signOut()">Sign Out</button>
+        </div>
+    </div>
+    <button onclick="test()" class="test-button">Test</button>
+
+    <script src="config.js"></script>
+    <script>
+        document.getElementById('g_id_onload').setAttribute('data-client_id', config.GOOGLE_CLIENT_ID);
+    </script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        async function handleCredentialResponse(response) {
+            try {
+                // Send the token to backend
+                const result = await fetch('http://localhost:3010/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${response.credential}`
+                    }
+                });
+
+                const data = await result.json();
+
+                if (!result.ok) {
+                    throw new Error(data.error || 'Authentication failed');
+                }
+
+                // Store the session token
+                localStorage.setItem('poc_illia_sessionToken', data.sessionToken);
+                // Store user info for persistence
+                localStorage.setItem('poc_illia_userInfo', JSON.stringify({
+                    name: data.user.name,
+                    email: data.user.email,
+                    picture: data.user.picture
+                }));
+
+                // Display user information
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('profilePic').src = data.user.picture;
+                document.getElementById('userName').textContent = data.user.name;
+                document.getElementById('userEmail').textContent = data.user.email;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Authentication failed. Please try again.');
+            }
+        }
+
+        async function signOut() {
+            try {
+                // Clear the session
+                localStorage.removeItem('poc_illia_sessionToken');
+                localStorage.removeItem('poc_illia_userInfo');
+
+                // Hide user info
+                document.getElementById('userInfo').style.display = 'none';
+
+                // Reload the page to reset the Google Sign-In button
+                window.location.reload();
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        }
+
+        // Check if user is already signed in
+        window.onload = async function() {
+            const existingSessionToken = localStorage.getItem('poc_illia_sessionToken');
+            console.log('existingSessionToken', existingSessionToken);
+
+            if (existingSessionToken) {
+                try {
+                    // Verify the token with the backend
+                    const response = await fetch('http://localhost:3010/auth/verify', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: existingSessionToken })
+                    });
+
+                    if (!response.ok) {
+                        // Token is invalid or expired
+                        localStorage.removeItem('poc_illia_sessionToken');
+                        localStorage.removeItem('poc_illia_userInfo');
+                        return;
+                    }
+
+                    // Token is valid, show user info
+                    const userInfo = JSON.parse(localStorage.getItem('poc_illia_userInfo'));
+                    if (userInfo) {
+                        document.getElementById('userInfo').style.display = 'block';
+                        document.getElementById('profilePic').src = userInfo.picture;
+                        document.getElementById('userName').textContent = userInfo.name;
+                        document.getElementById('userEmail').textContent = userInfo.email;
+                    }
+                } catch (error) {
+                    console.error('Error verifying token:', error);
+                    // Clear invalid session (optional)
+                    // localStorage.removeItem('poc_illia_sessionToken');
+                    // localStorage.removeItem('poc_illia_userInfo');
+                }
+            }
+        }
+
+        async function test() {
+          const response = await fetch('http://localhost:3010/test', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: 'test' })
+            });
+            const data = await response.json();
+            console.log('test response', data);
+        }
+    </script>
+</body>
+</html>
