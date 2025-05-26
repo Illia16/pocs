@@ -21,6 +21,7 @@
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5rem;
         }
         #userInfo {
             margin-top: 20px;
@@ -39,8 +40,9 @@
     </style>
 </head>
 <body>
+    <!-- GIS html -->
     <div class="container">
-        <h1>Google Sign-In</h1>
+        <h1>Google Sign-In (via Google Identity Services)</h1>
         <div id="g_id_onload"
              data-client_id=""
              data-callback="handleCredentialResponse">
@@ -60,18 +62,29 @@
             <button onclick="signOut()">Sign Out</button>
         </div>
     </div>
-    <button onclick="test()" class="test-button">Test</button>
+    <!-- OAuth2 html -->
+    <div class="container">
+        <h1>Google Sign-In (via OAuth2)</h1>
+        <button id="googleSignIn_oauth2">Sign In</button>
+    </div>
 
+    <!-- Test -->
+    <button onclick="test()" class="test-button">Test</button>
+    <!-- Config -->
     <script src="config.js"></script>
+
+
+
+    <!-- GIS script -->
     <script>
-        document.getElementById('g_id_onload').setAttribute('data-client_id', config.GOOGLE_CLIENT_ID);
+        document.getElementById('g_id_onload').setAttribute('data-client_id', config.web.client_id);
     </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         async function handleCredentialResponse(response) {
             try {
                 // Send the token to backend
-                const result = await fetch('http://localhost:3010/auth/google', {
+                const result = await fetch('http://localhost:3010/auth/google_gis', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -129,7 +142,7 @@
             if (existingSessionToken) {
                 try {
                     // Verify the token with the backend
-                    const response = await fetch('http://localhost:3010/auth/verify', {
+                    const response = await fetch('http://localhost:3010/auth/google_gis/verify', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -172,6 +185,28 @@
             const data = await response.json();
             console.log('test response', data);
         }
+    </script>
+
+
+
+    <!-- OAuth2 script -->
+    <script>
+      const clientId = config.web.client_id;
+      const redirectUri = config.web.redirect_uris[1];    
+      const scope = "openid email profile";
+      const responseType = "code";
+      const authEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+
+      document.getElementById("googleSignIn_oauth2").addEventListener("click", () => {
+        const authUrl = `${authEndpoint}?client_id=${encodeURIComponent(
+          clientId
+        )}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&response_type=${responseType}&scope=${encodeURIComponent(
+          scope
+        )}&prompt=select_account&access_type=offline`;
+        window.location.href = authUrl;
+      });
     </script>
 </body>
 </html>

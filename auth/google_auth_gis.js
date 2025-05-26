@@ -24,12 +24,12 @@ exports.handler = async (event) => {
             return {
                 statusCode: 200,
                 headers: corsHeaders,
-                body: ''
+                body: JSON.stringify({})
             };
         }
 
         // Handle token verification
-        if (event.path === '/auth/verify' && event.httpMethod === 'POST') {
+        if (event.path === '/auth/google_gis/verify' && event.httpMethod === 'POST') {
             const body = JSON.parse(event.body);
             const { token } = body;
 
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
         }
 
         // Handle Google authentication
-        if (event.path === '/auth/google' && event.httpMethod === 'POST') {
+        if (event.path === '/auth/google_gis' && event.httpMethod === 'POST') {
             const authHeader = event.headers.Authorization;
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
                 return {
