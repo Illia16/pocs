@@ -89,6 +89,8 @@ Resources:
       Environment:
         Variables:
           GOOGLE_CLIENT_ID: !Ref GoogleClientId
+          GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+          GOOGLE_REDIRECT_URI: !Ref GoogleRedirectUri
           JWT_SECRET: !Ref JwtSecret
       Events:
         testGetEvent:
@@ -116,6 +118,12 @@ Parameters:
   GoogleClientId:
     Type: String
     Description: Google OAuth Client ID
+  GoogleClientSecret:
+    Type: String
+    Description: Google OAuth Client Secret
+  GoogleRedirectUri:
+    Type: String
+    Description: Google OAuth Client Redirect Uri
   JwtSecret:
     Type: String
     Description: Secret key for JWT signing
