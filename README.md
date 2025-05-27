@@ -24,5 +24,5 @@
 ### google
 - .env must contain `GOOGLE_CLIENT_ID` and `JWT_SECRET`
 - config.js must contain `GOOGLE_CLIENT_ID` (see [config.template.js](auth/config.template.js))
-- start:sam
-- start:web
+- npm run start:sam
+- npm run start:web
