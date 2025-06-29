@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Resources:
-  testFunction:
+  testFn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
@@ -29,11 +29,11 @@ Resources:
               AllowHeaders: "'Content-Type,Authorization'"
               AllowOrigin: "'http://localhost:3000'"
               AllowCredentials: true
-  GoogleAuthFunction:
+  GoogleAuthGISFn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: google_auth.handler
+      Handler: google_auth_gis.handler
       Runtime: nodejs20.x
       Environment:
         Variables:
@@ -43,7 +43,7 @@ Resources:
         GoogleAuthEvent:
           Type: Api
           Properties:
-            Path: /auth/google
+            Path: /auth/google_gis
             Method: post
             Cors:
               AllowMethods: "'POST,OPTIONS'"
@@ -53,7 +53,7 @@ Resources:
         GoogleAuthOptionsEvent:
           Type: Api
           Properties:
-            Path: /auth/google
+            Path: /auth/google_gis
             Method: options
             Cors:
               AllowMethods: "'POST,OPTIONS'"
@@ -63,7 +63,7 @@ Resources:
         VerifyAuthEvent:
           Type: Api
           Properties:
-            Path: /auth/verify
+            Path: /auth/google_gis/verify
             Method: post
             Cors:
               AllowMethods: "'POST,OPTIONS'"
@@ -73,10 +73,76 @@ Resources:
         VerifyAuthOptionsEvent:
           Type: Api
           Properties:
-            Path: /auth/verify
+            Path: /auth/google_gis/verify
             Method: options
             Cors:
               AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
+  GoogleAuthOAuth2Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: google_auth_oauth2.handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          GOOGLE_CLIENT_ID: !Ref GoogleClientId
+          GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+          GOOGLE_REDIRECT_URI: !Ref GoogleRedirectUri
+          JWT_SECRET: !Ref JwtSecret
+      Events:
+        testGetEvent:
+          Type: Api
+          Properties:
+            Path: /auth/google_oauth2
+            Method: get
+            Cors:
+              AllowMethods: "'GET,POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
+        testOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/google_oauth2
+            Method: options
+            Cors:
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
+  GithubAuthOAuth2Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: github_auth_oauth2.handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          GITHUB_CLIENT_ID: !Ref GithubClientId
+          GITHUB_CLIENT_SECRET: !Ref GithubClientSecret
+          GITHUB_REDIRECT_URI: !Ref GithubRedirectUri
+          JWT_SECRET: !Ref JwtSecret
+      Events:
+        testGetEvent:
+          Type: Api
+          Properties:
+            Path: /auth/github_oauth2
+            Method: get
+            Cors:
+              AllowMethods: "'GET,POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
+        testOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/github_oauth2
+            Method: options
+            Cors:
+              AllowMethods: "'GET,POST,OPTIONS'"
               AllowHeaders: "'Content-Type,Authorization'"
               AllowOrigin: "'http://localhost:3000'"
               AllowCredentials: true
@@ -85,6 +151,12 @@ Parameters:
   GoogleClientId:
     Type: String
     Description: Google OAuth Client ID
+  GoogleClientSecret:
+    Type: String
+    Description: Google OAuth Client Secret
+  GoogleRedirectUri:
+    Type: String
+    Description: Google OAuth Client Redirect Uri
   JwtSecret:
     Type: String
     Description: Secret key for JWT signing

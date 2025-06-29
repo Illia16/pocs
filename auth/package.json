@@ -6,12 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:sam": "dotenv -e .env -- sam local start-api --port 3010",
-    "start:web": "http-server -p 3000"
+    "start:web": "http-server -p 3000",
+    "start:web:github": "http-server -p 3000 -a localhost -o github.html"
   },
   "dependencies": {
+    "@octokit/oauth-app": "^8.0.1",
+    "@octokit/rest": "^22.0.0",
     "aws-sdk": "^2.1499.0",
     "dotenv-cli": "^8.0.0",
     "google-auth-library": "^9.6.1",
+    "googleapis": "^149.0.0",
     "http-server": "^14.1.1",
     "jsonwebtoken": "^9.0.2"
   }

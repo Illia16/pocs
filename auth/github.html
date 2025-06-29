@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Sign-In</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 5rem;
+    }
+
+    #userInfo {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .test-button {
+      margin-top: 20px;
+      display: block;
+    }
+
+    #oauth2UserInfo {
+      display: block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- OAuth2 html -->
+  <div class="container">
+    <h1>GitHub Sign-In (via OAuth2)</h1>
+    <button id="githubSignIn_oauth2">Sign In</button>
+    <div id="githubUserInfo">
+      <img id="githubProfilePic" class="profile-pic" src="" alt="Profile Picture">
+      <h2 id="githubUserName"></h2>
+      <p id="githubUserEmail"></p>
+      <button onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <button onclick="test()" class="test-button">Test</button>
+  <!-- Config -->
+  <script src="config.github.js"></script>
+
+  <script>
+    function signOut() {
+      document.getElementById('githubUserInfo').style.display = 'none';
+      window.location.href = 'http://localhost:3000/github.html';
+    }
+
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        name: params.get('name'),
+        email: params.get('email'),
+        picture: params.get('picture')
+      };
+    }
+    // Function to display user data
+    function displayUserData(userData) {
+      const githubProfilePic = document.getElementById('githubProfilePic');
+      const githubUserName = document.getElementById('githubUserName');
+      const githubUserEmail = document.getElementById('githubUserEmail');
+
+      githubProfilePic.src = userData.picture;
+      githubUserName.textContent = userData.name;
+      githubUserEmail.textContent = userData.email;
+    }
+
+    // Check for OAuth2 callback data on page load
+    window.addEventListener('load', () => {
+      const userData = getUrlParams();
+
+      if (userData.name && userData.email && userData.picture) {
+        displayUserData(userData);
+      }
+    });
+
+
+    async function test() {
+      const response = await fetch('http://localhost:3010/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: 'test' })
+      });
+      const data = await response.json();
+      console.log('test response', data);
+    }
+
+    const clientId = config.web.client_id;
+    const redirectUri = config.web.redirect_uris[1];
+    const scope = "read:user user:email";
+    const authEndpoint = "https://github.com/login/oauth/authorize";
+
+    document.getElementById("githubSignIn_oauth2").addEventListener("click", () => {
+      console.log('githubSignIn_oauth2');
+
+      const authUrl = `${authEndpoint}?client_id=${encodeURIComponent(
+        clientId
+      )}&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&scope=${encodeURIComponent(
+        scope
+      )}&prompt=select_account`;
+      window.location.href = authUrl;
+    });
+  </script>
+</body>
+
+</html>
