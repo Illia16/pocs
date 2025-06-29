@@ -113,6 +113,39 @@ Resources:
               AllowHeaders: "'Content-Type,Authorization'"
               AllowOrigin: "'http://localhost:3000'"
               AllowCredentials: true
+  GithubAuthOAuth2Fn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: github_auth_oauth2.handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          GITHUB_CLIENT_ID: !Ref GithubClientId
+          GITHUB_CLIENT_SECRET: !Ref GithubClientSecret
+          GITHUB_REDIRECT_URI: !Ref GithubRedirectUri
+          JWT_SECRET: !Ref JwtSecret
+      Events:
+        testGetEvent:
+          Type: Api
+          Properties:
+            Path: /auth/github_oauth2
+            Method: get
+            Cors:
+              AllowMethods: "'GET,POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
+        testOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/github_oauth2
+            Method: options
+            Cors:
+              AllowMethods: "'GET,POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,Authorization'"
+              AllowOrigin: "'http://localhost:3000'"
+              AllowCredentials: true
 
 Parameters:
   GoogleClientId:
