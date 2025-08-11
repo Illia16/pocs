@@ -15,7 +15,7 @@
 
 ## cloudflare
 ### cf-tunnel
-- cloudflared tunnel create poc-tunnel (this will create a cfg file in users/[user]/.cloudflared dir (copy it to the same dirr as config.yml)
+- cloudflared tunnel create poc-tunnel (This will create a cfg file in users/[user]/.cloudflared dir. Copy it to the same dirr as config.yml)
 - for PUBLIC access: cloudflared tunnel route dns poc-tunnel poc-tunnel.illusha.net
 - for PRIVATE access: 
     - create DNS for Name: `TUNNEL_NAME`, Target: `[TunnelID].cfargotunnel.com`, Proxy status: Checked
