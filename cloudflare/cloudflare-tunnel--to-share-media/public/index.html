@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Media</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      img,
+      video {
+        max-width: 300px;
+        margin: 10px auto;
+        display: block;
+        object-fit: contain;
+      }
+      .media-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .media-item {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      button {
+        margin: 5px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .download-btn {
+        background: #4caf50;
+        color: white;
+      }
+      .enlarge-btn {
+        background: #2196f3;
+        color: white;
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        max-width: 90%;
+        max-height: 90%;
+        aspect-ratio: 1/1;
+      }
+      .modal img,
+      .modal video {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 50px;
+        color: white;
+        cursor: pointer;
+        background: darkcyan;
+        border-radius: 20px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Media</h1>
+    <div class="media-container" id="media"></div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script>
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modalContent");
+      const closeModal = document.getElementById("closeModal");
+
+      function openModal(filePath, ext) {
+        modalContent.innerHTML = "";
+        if (["jpg", "jpeg", "png", "gif"].includes(ext)) {
+          const img = document.createElement("img");
+          img.src = filePath;
+          modalContent.appendChild(img);
+        } else if (["mp4", "mov", "webm"].includes(ext)) {
+          const video = document.createElement("video");
+          video.src = filePath;
+          video.controls = true;
+          video.autoplay = true;
+          modalContent.appendChild(video);
+        } else {
+          const link = document.createElement("a");
+          link.href = filePath;
+          link.textContent = "Open file";
+          link.style.color = "white";
+          modalContent.appendChild(link);
+        }
+        modal.style.display = "flex";
+      }
+
+      closeModal.onclick = () => (modal.style.display = "none");
+      window.onclick = (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      };
+
+      let currentPage = 1;
+      const limit = 20;
+      let loading = false;
+      let hasMore = true;
+
+      function loadMedia() {
+        if (loading || !hasMore) return;
+        loading = true;
+
+        fetch(`/api/media?page=${currentPage}&limit=${limit}`)
+          .then((res) => res.json())
+          .then((data) => {
+            const container = document.getElementById("media");
+            data.files.forEach((file) => {
+              const ext = file.split(".").pop().toLowerCase();
+              const filePath = `/media/${file}`;
+              const item = document.createElement("div");
+              item.className = "media-item";
+
+              let mediaElement;
+              if (["jpg", "jpeg", "png", "gif"].includes(ext)) {
+                mediaElement = document.createElement("img");
+                mediaElement.dataset.src = filePath; // lazy load
+                mediaElement.loading = "lazy";
+              } else if (["mp4", "mov", "webm"].includes(ext)) {
+                mediaElement = document.createElement("video");
+                mediaElement.dataset.src = filePath;
+                mediaElement.controls = true;
+              } else {
+                mediaElement = document.createElement("a");
+                mediaElement.href = filePath;
+                mediaElement.textContent = file;
+              }
+
+              const downloadBtn = document.createElement("button");
+              downloadBtn.className = "download-btn";
+              downloadBtn.textContent = "Download";
+              downloadBtn.onclick = () => {
+                const a = document.createElement("a");
+                a.href = filePath;
+                a.download = file;
+                a.click();
+              };
+
+              item.appendChild(mediaElement);
+              item.appendChild(downloadBtn);
+
+              if (["jpg", "jpeg", "png", "gif"].includes(ext)) {
+                const enlargeBtn = document.createElement("button");
+                enlargeBtn.className = "enlarge-btn";
+                enlargeBtn.textContent = "Enlarge";
+                enlargeBtn.onclick = () => openModal(filePath, ext);
+                item.appendChild(enlargeBtn);
+              }
+
+              container.appendChild(item);
+            });
+
+            lazyLoadMedia();
+            hasMore = data.hasMore;
+            if (hasMore) currentPage++;
+            loading = false;
+          });
+      }
+
+      function lazyLoadMedia() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const el = entry.target;
+                if (el.dataset.src) {
+                  el.src = el.dataset.src;
+                  delete el.dataset.src;
+                }
+                observer.unobserve(el);
+              }
+            });
+          },
+          { rootMargin: "200px" }
+        );
+
+        document
+          .querySelectorAll("img[data-src], video[data-src]")
+          .forEach((el) => observer.observe(el));
+      }
+
+      window.addEventListener("scroll", () => {
+        if (
+          window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 500
+        ) {
+          loadMedia();
+        }
+      });
+
+      loadMedia();
+    </script>
+  </body>
+</html>

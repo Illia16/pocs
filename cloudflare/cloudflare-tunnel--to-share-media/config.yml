@@ -1,0 +1,7 @@
+tunnel: media-to-share
+credentials-file: ./media-to-share.json
+
+ingress:
+  - hostname: media-to-share.illusha.net
+    service: http://localhost:3000
+  - service: http_status:404

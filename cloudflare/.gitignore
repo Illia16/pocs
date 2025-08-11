@@ -1,4 +1,10 @@
 config.js
 
-# cloudflare cfg
-*.json
+# cloudflare poc
+config.js
+my-poc-tunnel.json
+
+# cloudflare media-to-share
+media
+node_modules
+media-to-share.json

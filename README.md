@@ -15,10 +15,13 @@
 
 ## cloudflare
 ### cf-tunnel
-- cloudflared tunnel create poc-tunnel
-- cloudflared tunnel route dns poc-tunnel poc-tunnel.illusha.net
-- cloudflared tunnel run poc-tunnel (cloudflared tunnel --config config.yml run poc-tunnel)
-
+- cloudflared tunnel create poc-tunnel (this will create a cfg file in users/[user]/.cloudflared dir (copy it to the same dirr as config.yml)
+- for PUBLIC access: cloudflared tunnel route dns poc-tunnel poc-tunnel.illusha.net
+- for PRIVATE access: 
+    - create DNS for Name: `TUNNEL_NAME`, Target: `[TunnelID].cfargotunnel.com`, Proxy status: Checked
+    - use CloudFlare Zero Trust "Applications" and "Policies" to give access to specific emails etc.
+- cloudflared tunnel --config config.yml run poc-tunnel (cloudflared tunnel run poc-tunnel)
+- OPTIONAL: cloudflared tunnel delete poc-tunnel
 
 ## auth
 ### google
