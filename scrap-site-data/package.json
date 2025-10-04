@@ -1,0 +1,16 @@
+{
+  "name": "poc-scrapping",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start:siteA": "dotenv -e .env.siteA -- node fetch_data.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Illia N.",
+  "license": "ISC",
+  "description": "Data scrabbing from X number of pages of the site and putting it into CSV.",
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "dotenv-cli": "^8.0.0"
+  }
+}
