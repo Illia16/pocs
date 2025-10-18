@@ -17,6 +17,8 @@ const COLUMN_H = process.env.COLUMN_H;
 const COLUMN_I = process.env.COLUMN_I;
 const COLUMN_J = process.env.COLUMN_J;
 const COLUMN_K = process.env.COLUMN_K;
+const COLUMN_L = process.env.COLUMN_L;
+const COLUMN_M = process.env.COLUMN_M;
 
 // Ensure CSV file exists and write headers
 const columns = [
@@ -31,6 +33,8 @@ const columns = [
   COLUMN_I,
   COLUMN_J,
   COLUMN_K,
+  COLUMN_L,
+  COLUMN_M,
 ];
 
 fs.writeFileSync(CSV_FILE, "\uFEFF" + columns.join(",") + "\n", { encoding: "utf-8" });
@@ -50,6 +54,10 @@ function getValueByLabel(dom, labelText) {
   const li = dom("li").filter((i, el) => dom(el).find(".label").text().trim() === labelText);
   const value = li.find(".value").html()?.trim() || "-"; // use .html() instead of .text() to preserve entities
   return decodeHtmlEntities(value);
+}
+
+function getLocation(dom) {
+  return dom(".h5.location").html().trim();
 }
 
 // Helper function to extract _renderedUrl
@@ -117,6 +125,8 @@ async function fetchAllProjects() {
               getValueByLabel(dom, COLUMN_I),
               getValueByLabel(dom, COLUMN_J),
               getValueByLabel(dom, COLUMN_K),
+              getValueByLabel(dom, COLUMN_L),
+              getLocation(dom),
             ];
 
             const safeRow = row.map((v) => `"${v.replace(/"/g, '""')}"`);

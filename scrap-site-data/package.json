@@ -4,6 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start:siteA": "dotenv -e .env.siteA -- node fetch_data.mjs",
+    "start:sitesB": "dotenv -e .env.sitesB -- node fetch_data2.mjs",
+    "start:siteC": "dotenv -e .env.siteC -- node fetch_data_siteC.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Illia N.",
