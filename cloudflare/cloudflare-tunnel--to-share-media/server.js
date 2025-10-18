@@ -1,15 +1,39 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const PORT = 3000;
 
 const mediaDir = path.join(__dirname, 'media');
 
+// Ensure media directory exists
+if (!fs.existsSync(mediaDir)) {
+  fs.mkdirSync(mediaDir);
+}
+
+// Multer setup (save files in /media with original name)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, mediaDir),
+  filename: (req, file, cb) => cb(null, file.originalname)
+});
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    files: 200, // max files per request
+  }
+});
+
 // Serve static files so browser can access them
 app.use('/media', express.static(mediaDir));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Upload endpoint (multiple files)
+app.post('/api/upload', upload.array('files'), (req, res) => {
+  console.log('Upload hit:', req.files.length, 'files');
+  res.json({ message: 'Files uploaded successfully', files: req.files.map(f => f.filename) });
+});
 
 // Endpoint to fetch all file names
 app.get('/api/media', (req, res) => {
@@ -21,7 +45,7 @@ app.get('/api/media', (req, res) => {
   fs.readdir(mediaDir, (err, files) => {
     if (err) return res.status(500).json({ error: 'Unable to read media directory' });
 
-    // Sort files by "last modified" date (latest first)
+    // Sort by last modified (newest first)
     const sortedFiles = files
       .map(file => {
         const filePath = path.join(mediaDir, file);
